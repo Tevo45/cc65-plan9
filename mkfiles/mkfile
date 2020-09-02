@@ -1,0 +1,13 @@
+</$objtype/mkfile
+
+DIRS=\
+	src		\
+	libsrc	\
+	doc		\
+	samples
+
+all clean nuke install:V:
+	for(dir in $DIRS) @{
+		cd $dir
+		mk $target
+	}

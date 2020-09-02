@@ -1,0 +1,18 @@
+</$objtype/mkfile
+
+LIBS=\
+	../common/common.$O.a
+
+SRC=`{walk | grep '\.c$'}
+OBJ=${SRC:%.c=%.$O}
+
+<../common.mk
+
+$O.out: $OBJ
+	$CC -o $target $OBJ $LIBS
+
+%.$O: %.c
+	$CC $CFLAGS $stem.c -c -o $target
+
+clean nuke:V:
+	rm -f [$OS].out *.[$OS]

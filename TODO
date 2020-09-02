@@ -1,0 +1,6 @@
+- Add git revision to BUILD_ID (mkfiles/src/common.mk)
+- Write mkfiles for libsrc, doc and samples
+- Cleanup mkfiles
+- Maybe write mkfiles to be installed somewhere like /sys/lib/cc65/$system/mkfile
+	- Can be imported for building projects for $system, in the same spirit
+	as /$objtype/mkfile

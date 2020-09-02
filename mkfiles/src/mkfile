@@ -1,0 +1,45 @@
+</$objtype/mkfile
+
+PROGS=\
+	ar65		\
+	ca65		\
+	cc65		\
+	chrcvt65	\
+	cl65		\
+	co65		\
+	da65		\
+	grc65		\
+	ld65		\
+	od65		\
+	sim65		\
+	sp65
+
+EXEC=${PROGS:%=%/$O.out}
+
+<common.mk
+
+all:V: $EXEC
+
+common/common.$O.a: common
+	cd common && mk
+
+%/$O.out: common/common.$O.a
+	cd $stem && mk -f ../mkfile.prog
+
+clean nuke:V:
+	@{ cd common && mk clean }
+	for(prog in $PROGS) @{
+		cd $prog
+		mk -f ../mkfile.prog $target
+	}
+
+$bindir/%: %/$O.out $bindir
+	cp $stem/$O.out $target
+
+install:V: ${PROGS:%=$bindir/%}
+
+uninstall:V:
+	for(prog in $PROGS) rm -f $bindir/$prog
+
+$datadir $bindir:
+	mkdir -p $target

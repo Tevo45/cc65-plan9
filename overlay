@@ -1,0 +1,45 @@
+#!/bin/rc
+
+fn usage {
+	echo usage: $0 [-u] source target >[1=2]
+	exit 'usage'
+}
+
+mode=bind
+
+while(~ $1 -*) {
+	switch($1) {
+	case -u
+		mode=unbind
+	case *
+		usage
+	}
+	shift
+}
+
+source=$1
+target=$2
+
+if(! test -d $source || ! test -d $target)
+	usage
+
+files=`{walk -f $source}
+mtpts=`{for(file in $files) basename -d $file | sed s@$source@$target@g}
+
+for(mtpt in $mtpts)
+	switch($mode) {
+	case bind
+		bind -cq $mtpt $mtpt || status=''
+	case unbind
+		unmount $mtpt >/dev/null >[2=1]  || status=''
+	}
+
+if(~ $mode bind)
+	for(file in $files) {
+		dest=`{echo $file | sed s@$source@$target@g}
+		aux/stub $dest
+		bind -c $file $dest
+	}
+if not
+	status=''
+

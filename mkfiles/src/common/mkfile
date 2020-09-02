@@ -1,0 +1,18 @@
+</$objtype/mkfile
+
+LIB=common.$O.a
+
+SRC=`{walk | grep '\.c$'}
+OBJ=${SRC:%.c=%.$O}
+
+<../common.mk
+
+$LIB(%):N: %
+$LIB: ${OBJ:%=$LIB(%)}
+	ar rv $LIB `{membername $newprereq}
+
+clean:
+	rm -f *.[$OS].a *.[$OS]
+
+%.$O: %.c
+	$CC -c $CFLAGS $stem.c -o $target
