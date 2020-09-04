@@ -1,0 +1,103 @@
+
+CA65FLAGS=
+CC65FLAGS=-Or -Werror
+
+# For native $O
+</$cputype/mkfile
+
+CC65_HOME=`{cleanname -d `{pwd} ..}
+
+AR65=../src/ar65/$O.out
+CA65=../src/ca65/$O.out
+CC65=../src/cc65/$O.out
+LD65=../src/cc65/$O.out
+
+../src/%/$O.out:
+	@{
+		cd ../src
+		objtype=$cputype mk $stem/$O.out
+	}
+
+EXTZP=\
+	cbm510	\
+	cbm610	\
+	lynx
+
+TARGETUTIL=\
+	apple2		\
+	apple2enh	\
+	atari		\
+	geos-apple
+
+GEOSDIRS=\
+	common		\
+	conio		\
+	disk		\
+	dlgbox		\
+	file		\
+	graph		\
+	memory		\
+	menuicon	\
+	mousesprite	\
+	process		\
+	runtime		\
+	system
+
+<defs/common.mk
+<`{test -r defs/$TARGET.mk && echo defs/$TARGET.mk || echo /dev/null} # It needs a include name
+
+SRCDIRS=\
+	$SRCDIR	\
+	`{~ $TARGET $CBMS && echo cbm}	\
+	`{~ $TARGET $GEOS && for(dir in $GEOSDIRS) {test -d $TARGET/$dir && echo $TARGET/$dir; echo geos-common/$dir}}	\
+	common		\
+	conio		\
+	dbg			\
+	em			\
+	joystick	\
+	mouse		\
+	runtime		\
+	serial		\
+	tgi			\
+	zlib
+
+SRC=`{walk $SRCDIRS | grep '\.[cs]$'}
+# Can we do this with a single namelist instead?
+OBJ=`{for(f in $SRC) echo $f | sed 's@\.[cs]$@.o@g'}
+
+DEPS=${OBJ:%.o=%.d}
+
+EXTRASRC=`{walk $SRCDIR | grep $SRCDIR/extra/^'.*\.s$'}
+EXTRAOBJ=${EXTRASRC:$SRCDIR/extra/%.s=../lib/$TARGET-%.o}
+
+DEPS=$DEPS ${EXTRAOBJ:../lib/%.o=$TARGET/%.d}
+
+# TODO: Target tools
+
+ZPOBJ=$TARGET/zeropage `{~ $TARGET $EXTZP && echo $TARGET/extzp.o}
+
+all:V: $TARGET
+
+# TODO: drvs
+
+# FIXME: Dump temporary assembly under ../libwrk, with .s extension
+
+%.o: %.s
+	$CA65 -t $TARGET $CA65FLAGS --create-dep `{echo $target | sed 's@\.o$@\.d@g'} \
+		-o $target $prereq
+
+%.o: %.c
+	$CC65 -t $TARGET $CC65FLAGS --create-dep `{echo $target | sed 's@\.o$@\.d@g'} \
+		--dep-target $target -o `{echo $target | sed 's@\.o$@\.asm@g'} $prereq
+	$CA65 -t $TARGET -o $target `{echo $target | sed 's@\.o$@\.asm@g'}
+
+../lib/$TARGET-%.o: $SRCDIR/extra/%.s
+	mkdir -p ../lib
+	$CA65 -t $TARGET $CA65FLAGS \
+		--create-dep `{echo $target | sed 's@^../lib/@'^$TARGET^'/@g;s@\.o$@.d@g'}
+
+# TODO: Maintain that as an archive
+../lib/$TARGET.lib: $OBJ
+	$AR65 a $target $prereq
+
+$TARGET:V: $EXTRAOBJ ../lib/$TARGET.lib

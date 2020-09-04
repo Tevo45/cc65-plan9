@@ -1,0 +1,63 @@
+
+CBMS=\
+	c128	\
+	c16		\
+	c64		\
+	cbm510	\
+	cbm610	\
+	cx16	\
+	pet		\
+	plus4	\
+	vic20
+
+GEOS=\
+	geos-apple	\
+	geos-cbm
+
+TARGETS=\
+	apple2		\
+	apple2enh	\
+	atari		\
+	atarixl		\
+	atari2600	\
+	atari5200	\
+	atmos		\
+	creativision\
+	$CBMS		\
+	$GEOS		\
+	gamate		\
+	lynx		\
+	nes			\
+	none		\
+	osic1p		\
+	pce			\
+	sim6502		\
+	sim65c02	\
+	supervision	\
+	telestrat
+
+DRVTYPES=\
+	emd	\
+	joy	\
+	mou	\
+	ser	\
+	tgi
+
+OUTPUTDIRS=\
+	lib		\
+	asminc	\
+	cfg		\
+	include	\
+	`{echo ../include/*			| sed 's@../@@g'}	\
+	`{echo ../target/*/drv/*	| sed 's@../@@g'}	\
+	`{echo ../target/*/util		| sed 's@../@@g'}
+
+datadir=/sys/lib/cc65
+
+all:V: $TARGETS
+
+$TARGETS:V:
+	for(TARGET in $target) # Can I get mk to call each target individually?
+		mk -f mkfile.target || status=''
+
+# TODO: clean, nuke, install

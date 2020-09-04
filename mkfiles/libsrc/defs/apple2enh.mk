@@ -1,0 +1,3 @@
+SRCDIR=apple2
+OBJPFX=a2
+DRVPFX=a2e
