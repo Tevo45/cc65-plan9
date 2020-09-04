@@ -1,4 +1,5 @@
-#!/bin/rc
+#!/bin/rc -e
+# Overlays a directory tree over another
 
 fn usage {
 	echo usage: $0 [-u] source target >[1=2]
@@ -24,14 +25,19 @@ if(! test -d $source || ! test -d $target)
 	usage
 
 files=`{walk -f $source}
-mtpts=`{for(file in $files) basename -d $file | sed s@$source@$target@g}
+mtpts=`{{for(file in $files) basename -d $file} | sort | uniq | sed 's@^'$source@$target@g}
 
 for(mtpt in $mtpts)
 	switch($mode) {
 	case bind
-		bind -cq $mtpt $mtpt || status=''
+		if(test -d $mtpt)
+			bind -cq $mtpt $mtpt || status=''
+		if not { # This might not be desirable
+			aux/stub -d $mtpt
+			ramfs -m $mtpt
+		}
 	case unbind
-		unmount $mtpt >/dev/null >[2=1]  || status=''
+		unmount $mtpt >/dev/null >[2=1] || status=''
 	}
 
 if(~ $mode bind)
@@ -42,4 +48,3 @@ if(~ $mode bind)
 	}
 if not
 	status=''
-
