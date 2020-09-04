@@ -6,14 +6,19 @@ all clean nuke install:V: upstream bind
 		cd upstream && mk $target
 	}
 
-upstream:D: /bin/git/clone
+upstream:
 	git/clone $UPSTREAM upstream
 
-bind:V: upstream overlay
-	if(! test -e upstream/mkfile)
-		overlay mkfiles upstream
-	if not
-		status=''
+sync pull:V: upstream
+	git/pull
+	@{
+		cd upstream && git/pull
+	}
 
-unbind:V: upstream overlay
+upstream/mkfile: upstream
+	overlay mkfiles upstream
+
+bind:V: upstream/mkfile
+
+unbind:V:
 	overlay -u mkfiles upstream
